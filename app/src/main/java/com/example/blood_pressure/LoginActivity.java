@@ -42,14 +42,6 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void google(View view) {
-    }
-
-    public void guest(View view) {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-    }
-
     public void login(View view) {
         Intent intent = new Intent(this, MainActivity.class);
 
