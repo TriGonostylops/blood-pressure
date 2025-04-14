@@ -50,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
                     startActivity(intent);
+                    finish();
                 } else {
                     Toast.makeText(LoginActivity.this, "Wrong email or password",Toast.LENGTH_LONG).show();
                 }
