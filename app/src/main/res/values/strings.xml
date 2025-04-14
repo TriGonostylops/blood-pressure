@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">blood-pressure</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="guest_mode">Guest mode</string>
+    <string name="log_in_with_google">log in with google</string>
+    <string name="register">Register</string>
+    <string name="name">Name</string>
+    <string name="cancel">Cancel</string>
+    <string name="log_in">Log in</string>
+</resources>

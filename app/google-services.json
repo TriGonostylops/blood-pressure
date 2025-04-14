@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1051624907536",
+    "project_id": "high-bp",
+    "storage_bucket": "high-bp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051624907536:android:5498796fe8d96c0af1fb95",
+        "android_client_info": {
+          "package_name": "com.example.blood_pressure"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1051624907536-8jnj3plplifgdcscqa81p302nseo5se4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.blood_pressure",
+            "certificate_hash": "93e8f782d1bcab04543795a94c73ddfc9a723cec"
+          }
+        },
+        {
+          "client_id": "1051624907536-l1mbvn6p43f5hf7m4iue21jhnaihs7v1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgK6n4Yr58lYyj62xtGQH5T6F3s6rk040"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1051624907536-l1mbvn6p43f5hf7m4iue21jhnaihs7v1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
