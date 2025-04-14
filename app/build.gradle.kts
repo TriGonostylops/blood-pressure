@@ -44,4 +44,6 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-auth:23.2.0")
     implementation ("com.google.android.material:material:1.11.0")
+    implementation ("androidx.navigation:navigation-fragment:2.7.7")
+    implementation ("androidx.navigation:navigation-ui:2.7.7")
 }

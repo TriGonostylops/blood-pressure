@@ -9,4 +9,10 @@
     <string name="cancel">Cancel</string>
     <string name="log_in">Log in</string>
     <string name="confirm_password">Confirm password</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home">Home</string>
+    <string name="add">Add</string>
+    <string name="history">History</string>
+    <string name="settings">Settings</string>
 </resources>

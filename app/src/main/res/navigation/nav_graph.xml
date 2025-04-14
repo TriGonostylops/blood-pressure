@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.blood_pressure.fragments.HomeFragment"
+        android:label="Home" />
+
+    <fragment
+        android:id="@+id/addMeasurementFragment"
+        android:name="com.example.blood_pressure.fragments.AddMeasurementFragment"
+        android:label="Add Measurement" />
+
+    <fragment
+        android:id="@+id/measurementsFragment"
+        android:name="com.example.blood_pressure.fragments.MeasurementFragment"
+        android:label="Measurements" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.blood_pressure.fragments.SettingsFragment"
+        android:label="Settings" />
+</navigation>
