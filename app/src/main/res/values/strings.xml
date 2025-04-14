@@ -8,4 +8,5 @@
     <string name="name">Name</string>
     <string name="cancel">Cancel</string>
     <string name="log_in">Log in</string>
+    <string name="confirm_password">Confirm password</string>
 </resources>
