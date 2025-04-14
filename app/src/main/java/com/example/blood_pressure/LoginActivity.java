@@ -43,12 +43,20 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void login(View view) {
+        String email = userEmailEditText.getText() != null ? userEmailEditText.getText().toString().trim() : "";
+        String password = passwordEditText.getText() != null ? passwordEditText.getText().toString().trim() : "";
+
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(LoginActivity.this, "Please enter both email and password.", Toast.LENGTH_LONG).show();
+            return;
+        }
         Intent intent = new Intent(this, MainActivity.class);
 
         mAuth.signInWithEmailAndPassword(userEmailEditText.getText().toString(), passwordEditText.getText().toString()).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
+                    Toast.makeText(LoginActivity.this, "Successful authentication",Toast.LENGTH_LONG).show();
                     startActivity(intent);
                     finish();
                 } else {

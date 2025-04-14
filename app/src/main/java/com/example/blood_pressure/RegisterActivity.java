@@ -43,19 +43,45 @@ public class RegisterActivity extends AppCompatActivity {
     public void register(View view) {
         Intent intent = new Intent(this, LoginActivity.class);
 
-        String email = userEmailEditText.getText().toString();
-        String password = passwordEditText.getText().toString();
-        String password2 = confirmPasswordEditText.getText().toString();
+        String email = userEmailEditText.getText() != null ? userEmailEditText.getText().toString().trim() : "";
+        String password = passwordEditText.getText() != null ? passwordEditText.getText().toString().trim() : "";
+        String password2 = confirmPasswordEditText.getText() != null ? confirmPasswordEditText.getText().toString().trim() : "";
+
+        if (email.isEmpty() || password.isEmpty() || password2.isEmpty()) {
+            Toast.makeText(RegisterActivity.this, "Please fill in all fields.", Toast.LENGTH_LONG).show();
+            return;
+        }
         if(!password.equals(password2)){
+            Toast.makeText(RegisterActivity.this, "The passwords don't match!",Toast.LENGTH_LONG).show();
             return;
         }
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
+                    Toast.makeText(RegisterActivity.this, "Succesful registration",Toast.LENGTH_LONG).show();
                     startActivity(intent);
+                    finish();
                 } else {
-                    Toast.makeText(RegisterActivity.this, "An error occured",Toast.LENGTH_LONG).show();
+                    String errorMessage = "Registration failed";
+
+                    if (task.getException() != null) {
+                        String exceptionMessage = task.getException().getMessage();
+
+                        if (exceptionMessage != null) {
+                            if (exceptionMessage.contains("email address is badly formatted")) {
+                                errorMessage = "Invalid email format.";
+                            } else if (exceptionMessage.contains("password is invalid") || exceptionMessage.contains("Password should be at least")) {
+                                errorMessage = "Password must be at least 6 characters.";
+                            } else if (exceptionMessage.contains("The email address is already in use")) {
+                                errorMessage = "Email is already registered.";
+                            } else {
+                                errorMessage = exceptionMessage;
+                            }
+                        }
+                    }
+
+                    Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
             }
         });
