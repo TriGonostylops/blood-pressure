@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,6 +12,8 @@ import androidx.fragment.app.Fragment;
 
 import com.example.blood_pressure.R;
 import com.google.android.material.transition.MaterialFadeThrough;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class HomeFragment extends Fragment {
 
@@ -36,8 +39,6 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Enable MaterialFadeThrough transitions
         setEnterTransition(new MaterialFadeThrough());
         setExitTransition(new MaterialFadeThrough());
 
@@ -51,6 +52,16 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        TextView welcomeText = view.findViewById(R.id.welcomeText);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user != null) {
+            String email = user.getEmail();
+            welcomeText.setText("Welcome, " + email);
+        }
+
+        return view;
     }
 }
