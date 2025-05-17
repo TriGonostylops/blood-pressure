@@ -10,8 +10,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.blood_pressure.R;
+import com.example.blood_pressure.model.Measurement;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -50,6 +53,16 @@ public class MeasurementFragment extends Fragment {
         return view;
     }
 
+    private static class MeasurementWithId {
+        String id;
+        Measurement measurement;
+
+        MeasurementWithId(String id, Measurement measurement) {
+            this.id = id;
+            this.measurement = measurement;
+        }
+    }
+
     private void loadMeasurements() {
         db.collection("measurements")
                 .whereEqualTo("userId", currentUser.getUid())
@@ -63,7 +76,7 @@ public class MeasurementFragment extends Fragment {
                         Log.d("MeasurementFragment", "No documents found for user.");
                     }
 
-                    Map<String, List<Map<String, Object>>> grouped = new LinkedHashMap<>();
+                    Map<String, List<MeasurementWithId>> grouped = new LinkedHashMap<>();
                     grouped.put("Today", new ArrayList<>());
                     grouped.put("This Week", new ArrayList<>());
                     grouped.put("This Month", new ArrayList<>());
@@ -73,38 +86,29 @@ public class MeasurementFragment extends Fragment {
                     long currentTime = System.currentTimeMillis();
 
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        Map<String, Object> m = doc.getData();
-                        Log.d("MeasurementFragment", "Doc: " + doc.getId() + " => " + m);
+                        Measurement measurement = doc.toObject(Measurement.class);
+                        if (measurement == null || measurement.getTimestamp() == null) continue;
 
-                        if (m == null) continue;
+                        measurement.setDocumentId(doc.getId());
 
-                        Object tsObj = m.get("timestamp");
-                        long ts;
-                        if (tsObj instanceof Long) {
-                            ts = (Long) tsObj;
-                        } else if (tsObj instanceof Double) {
-                            ts = ((Double) tsObj).longValue();
-                        } else {
-                            Log.w("MeasurementFragment", "Invalid timestamp in doc: " + doc.getId());
-                            continue;
-                        }
-
-                        Log.d("MeasurementFragment", "Parsed timestamp (ms): " + ts);
+                        long ts = measurement.getTimestamp().toDate().getTime();
 
                         Calendar cal = Calendar.getInstance();
                         cal.setTimeInMillis(ts);
 
+                        MeasurementWithId mwid = new MeasurementWithId(doc.getId(), measurement);
+
                         if (isSameDay(cal, now)) {
-                            grouped.get("Today").add(m);
+                            grouped.get("Today").add(mwid);
                             Log.d("MeasurementFragment", "Added to Today");
                         } else if (isWithinDays(ts, currentTime, 7)) {
-                            grouped.get("This Week").add(m);
+                            grouped.get("This Week").add(mwid);
                             Log.d("MeasurementFragment", "Added to This Week");
                         } else if (isWithinDays(ts, currentTime, 30)) {
-                            grouped.get("This Month").add(m);
+                            grouped.get("This Month").add(mwid);
                             Log.d("MeasurementFragment", "Added to This Month");
                         } else {
-                            grouped.get("Older").add(m);
+                            grouped.get("Older").add(mwid);
                             Log.d("MeasurementFragment", "Added to Older");
                         }
                     }
@@ -114,7 +118,7 @@ public class MeasurementFragment extends Fragment {
 
                     SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
 
-                    for (Map.Entry<String, List<Map<String, Object>>> entry : grouped.entrySet()) {
+                    for (Map.Entry<String, List<MeasurementWithId>> entry : grouped.entrySet()) {
                         if (entry.getValue().isEmpty()) continue;
 
                         Log.d("MeasurementFragment", "Rendering group: " + entry.getKey() + " with " + entry.getValue().size() + " items.");
@@ -125,30 +129,52 @@ public class MeasurementFragment extends Fragment {
                         title.setPadding(0, 48, 0, 16);
                         groupContainer.addView(title);
 
-                        for (Map<String, Object> m : entry.getValue()) {
+                        for (MeasurementWithId mwid : entry.getValue()) {
                             View card = inflater.inflate(R.layout.item_measurement_card, groupContainer, false);
 
-                            String systolic = m.get("systolic") != null ? String.valueOf(m.get("systolic")) : "-";
-                            String diastolic = m.get("diastolic") != null ? String.valueOf(m.get("diastolic")) : "-";
-                            String pulse = m.get("pulse") != null ? String.valueOf(m.get("pulse")) : "-";
-                            String note = m.get("note") != null ? m.get("note").toString() : "";
+                            // Set document ID as tag for update/delete operations
+                            card.setTag(mwid.id);
 
-                            Object tsObj = m.get("timestamp");
-                            long ts;
-                            if (tsObj instanceof Long) {
-                                ts = (Long) tsObj;
-                            } else if (tsObj instanceof Double) {
-                                ts = ((Double) tsObj).longValue();
-                            } else {
-                                ts = 0;
-                            }
-                            String formattedDate = ts > 0 ? sdf.format(new Date(ts)) : "Unknown";
+                            Measurement m = mwid.measurement;
+
+                            String systolic = String.valueOf(m.getSystolic());
+                            String diastolic = String.valueOf(m.getDiastolic());
+                            String pulse = String.valueOf(m.getPulse());
+                            String note = m.getNote() != null ? m.getNote() : "";
+
+                            String formattedDate = m.getTimestamp() != null
+                                    ? sdf.format(m.getTimestamp().toDate())
+                                    : "Unknown";
 
                             ((TextView) card.findViewById(R.id.textViewValues))
                                     .setText("BP: " + systolic + "/" + diastolic + ", Pulse: " + pulse);
 
                             ((TextView) card.findViewById(R.id.textViewNote)).setText(note);
                             ((TextView) card.findViewById(R.id.textViewTimestamp)).setText(formattedDate);
+
+                            card.findViewById(R.id.buttonDelete).setOnClickListener(v -> {
+                                new android.app.AlertDialog.Builder(requireContext())
+                                        .setTitle("Confirm Deletion")
+                                        .setMessage("Are you sure you want to delete this measurement?")
+                                        .setPositiveButton("Delete", (dialog, which) -> {
+                                            db.collection("measurements")
+                                                    .document(mwid.id)
+                                                    .delete()
+                                                    .addOnSuccessListener(aVoid -> {
+                                                        Log.d("MeasurementFragment", "Deleted measurement: " + mwid.id);
+                                                        groupContainer.removeView(card);
+                                                    })
+                                                    .addOnFailureListener(e -> Log.e("MeasurementFragment", "Error deleting document", e));
+                                        })
+                                        .setNegativeButton("Cancel", null)
+                                        .show();
+                            });
+                            card.findViewById(R.id.buttonEdit).setOnClickListener(v -> {
+                                Bundle bundle = new Bundle();
+                                bundle.putString("measurementId", mwid.id);
+                                NavHostFragment.findNavController(MeasurementFragment.this)
+                                        .navigate(R.id.addMeasurementFragment, bundle);
+                            });
 
                             groupContainer.addView(card);
 

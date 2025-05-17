@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     app:startDestination="@id/homeFragment">
 
     <fragment
@@ -11,7 +12,13 @@
     <fragment
         android:id="@+id/addMeasurementFragment"
         android:name="com.example.blood_pressure.fragments.AddMeasurementFragment"
-        android:label="Add Measurement" />
+        android:label="Add Measurement">
+
+        <argument
+            android:name="measurementId"
+            app:argType="string"
+            android:defaultValue="@null" />
+    </fragment>
 
     <fragment
         android:id="@+id/measurementsFragment"
@@ -22,4 +29,5 @@
         android:id="@+id/settingsFragment"
         android:name="com.example.blood_pressure.fragments.SettingsFragment"
         android:label="Settings" />
+
 </navigation>

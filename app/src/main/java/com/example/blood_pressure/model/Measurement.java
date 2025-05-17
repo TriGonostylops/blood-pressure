@@ -10,7 +10,15 @@ public class Measurement {
     private String note;
     private Timestamp timestamp;
     private String userId;
+    private transient String documentId;
 
+    public String getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
+    }
     public Measurement() {}
 
     public Measurement(int systolic, int diastolic, int pulse, String note, Timestamp timestamp, String userId) {
