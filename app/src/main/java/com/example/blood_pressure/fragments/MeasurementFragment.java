@@ -37,7 +37,6 @@ public class MeasurementFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Apply MaterialFadeThrough transitions
         setEnterTransition(new MaterialFadeThrough());
         setExitTransition(new MaterialFadeThrough());
 

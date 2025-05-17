@@ -12,6 +12,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.blood_pressure.R;
 import com.google.android.material.transition.MaterialFadeThrough;
@@ -97,8 +99,12 @@ public class AddMeasurementFragment extends Fragment {
 
         db.collection("measurements")
                 .add(measurement)
-                .addOnSuccessListener(documentReference ->
-                        Toast.makeText(getContext(), "Measurement added", Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(getContext(), "Measurement added", Toast.LENGTH_SHORT).show();
+
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigate(R.id.measurementsFragment);
+                })
                 .addOnFailureListener(e ->
                         Toast.makeText(getContext(), "Failed to add: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
