@@ -1,5 +1,9 @@
 package com.example.blood_pressure;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -15,6 +19,8 @@ import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseUser user;
@@ -34,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             Log.d(MainActivity.class.getName(), "User authenticated!");
+            scheduleDailyReminder(this);
         } else {
             Log.d(MainActivity.class.getName(), "User unauthenticated!");
             finish();
@@ -49,5 +56,23 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.e("MainActivity", "NavHostFragment not found");
         }
+    }
+    public void scheduleDailyReminder(Context context) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, ReminderReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 17);
+        calendar.set(Calendar.MINUTE, 35);
+        calendar.set(Calendar.SECOND, 0);
+
+        alarmManager.setInexactRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.getTimeInMillis(),
+                AlarmManager.INTERVAL_DAY,
+                pendingIntent
+        );
     }
 }

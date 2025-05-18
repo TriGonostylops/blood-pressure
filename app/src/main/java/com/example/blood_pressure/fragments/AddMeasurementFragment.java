@@ -133,13 +133,12 @@ public class AddMeasurementFragment extends Fragment {
         measurement.put("userId", currentUser.getUid());
 
         if (measurementId == null) {
-            // New entry
             measurement.put("timestamp", Timestamp.now());
             db.collection("measurements")
                     .add(measurement)
                     .addOnSuccessListener(doc -> {
                         Toast.makeText(getContext(), "Measurement added", Toast.LENGTH_SHORT).show();
-                        Navigation.findNavController(requireView()).navigate(R.id.measurementsFragment);
+                        //Navigation.findNavController(requireView()).navigate(R.id.measurementsFragment);
                     })
                     .addOnFailureListener(e ->
                             Toast.makeText(getContext(), "Failed to add: " + e.getMessage(), Toast.LENGTH_LONG).show()
