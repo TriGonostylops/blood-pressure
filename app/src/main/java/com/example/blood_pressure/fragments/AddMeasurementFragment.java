@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.blood_pressure.R;
+import com.example.blood_pressure.service.MeasurementService;
 import com.google.android.material.transition.MaterialFadeThrough;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,18 +30,18 @@ public class AddMeasurementFragment extends Fragment {
 
     private EditText editTextSystolic, editTextDiastolic, editTextPulse, editTextNote;
     private Button buttonAdd;
+    private MeasurementService measurementService;
 
-    private FirebaseFirestore db;
     private String measurementId = null;
     private Timestamp originalTimestamp = null;
-
-    public AddMeasurementFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setEnterTransition(new MaterialFadeThrough());
         setExitTransition(new MaterialFadeThrough());
+
+        measurementService = new MeasurementService();
 
         if (getArguments() != null) {
             measurementId = getArguments().getString("measurementId");
@@ -59,8 +60,6 @@ public class AddMeasurementFragment extends Fragment {
         editTextNote = view.findViewById(R.id.editTextNote);
         buttonAdd = view.findViewById(R.id.buttonAddMeasurement);
 
-        db = FirebaseFirestore.getInstance();
-
         if (measurementId != null) {
             buttonAdd.setText("Update Measurement");
             loadMeasurementForEdit();
@@ -72,17 +71,17 @@ public class AddMeasurementFragment extends Fragment {
     }
 
     private void loadMeasurementForEdit() {
-        db.collection("measurements").document(measurementId).get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        populateFields(doc);
-                    } else {
-                        Toast.makeText(getContext(), "Measurement not found", Toast.LENGTH_LONG).show();
-                    }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Failed to load data: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+        measurementService.loadMeasurement(measurementId, new MeasurementService.OnLoadCallback() {
+            @Override
+            public void onSuccess(DocumentSnapshot doc) {
+                populateFields(doc);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void populateFields(DocumentSnapshot doc) {
@@ -125,41 +124,25 @@ public class AddMeasurementFragment extends Fragment {
             return;
         }
 
-        Map<String, Object> measurement = new HashMap<>();
-        measurement.put("systolic", systolic);
-        measurement.put("diastolic", diastolic);
-        measurement.put("pulse", pulse);
-        measurement.put("note", note);
-        measurement.put("userId", currentUser.getUid());
-
-        if (measurementId == null) {
-            measurement.put("timestamp", Timestamp.now());
-            db.collection("measurements")
-                    .add(measurement)
-                    .addOnSuccessListener(doc -> {
-                        Toast.makeText(getContext(), "Measurement added", Toast.LENGTH_SHORT).show();
-                        //Navigation.findNavController(requireView()).navigate(R.id.measurementsFragment);
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(getContext(), "Failed to add: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                    );
-        } else {
-            if (originalTimestamp != null) {
-                measurement.put("timestamp", originalTimestamp);
-            } else {
-                measurement.put("timestamp", Timestamp.now());
+        MeasurementService.Callback callback = new MeasurementService.Callback() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(getContext(),
+                        measurementId == null ? "Measurement added" : "Measurement updated",
+                        Toast.LENGTH_SHORT).show();
+                Navigation.findNavController(requireView()).navigate(R.id.measurementsFragment);
             }
 
-            db.collection("measurements")
-                    .document(measurementId)
-                    .update(measurement)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(getContext(), "Measurement updated", Toast.LENGTH_SHORT).show();
-                        Navigation.findNavController(requireView()).navigate(R.id.measurementsFragment);
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(getContext(), "Failed to update: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                    );
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        };
+
+        if (measurementId == null) {
+            measurementService.saveMeasurement(systolic, diastolic, pulse, note, currentUser, callback);
+        } else {
+            measurementService.updateMeasurement(measurementId, systolic, diastolic, pulse, note, currentUser, originalTimestamp, callback);
         }
     }
 }
